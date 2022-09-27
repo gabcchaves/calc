@@ -4,7 +4,7 @@ use std::io;
 use std::collections::HashMap;
 
 fn main() {
-    let operators = ['+', '-', '*', '/'];
+    let operators = ['+', '-', '*', '/', '(', ')'];
     println!("> ");
     let mut expr = read_expr(&operators);
 }
@@ -24,7 +24,7 @@ fn read_expr(operators: &[char]) -> Vec<String> {
         if c.is_numeric() {
             operand.push(c);
         } else {
-            if operators[..].contains(&c) {
+            if operators[..].contains(&c) || c == '.' {
                 expression.push(operand.clone());
                 expression.push(c.to_string());
                 operand = String::new();
@@ -36,6 +36,19 @@ fn read_expr(operators: &[char]) -> Vec<String> {
     expression.push(operand.clone());
 
     expression
+}
+
+// Parse expression
+fn parse_expr<T>(expr: Vec<String>, operators: &[char]) -> T {
+    let mut stack_operands = Vec<T>::new();
+    let mut stack_operators = Vec<char>::new();
+
+    for op in expr {
+        if operators[..].contains(op.chars()[0]) {
+            stack_operators.push(op.chars()[0]);
+        } else {
+        }
+    }
 }
 
 // Add two numbers

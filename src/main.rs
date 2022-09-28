@@ -1,56 +1,52 @@
 /* Program to read an parse mathematical expressions from
  * command line. */
 use std::io;
-use std::collections::HashMap;
+// use std::collections::HashMap;
+
+
+const OPERATORS: [char; 6] = ['+', '-', '*', '/', '(', ')'];
+
 
 fn main() {
-    let operators = ['+', '-', '*', '/', '(', ')'];
     println!("> ");
-    let mut expr = read_expr(&operators);
+    let expr_string = read_string().split(" ").collect::<String>();
+    convert_to_prefix_notation(expr_string);
 }
 
-// Read expression from STDIN
-fn read_expr(operators: &[char]) -> Vec<String> { 
-    // Read input string
+
+// Read string from STDIN
+fn read_string() -> String {
     let mut str_input = String::new();
     io::stdin().read_line(&mut str_input);
-    
-    // Prepare expression
-    let expr = str_input.split_whitespace().collect::<String>();
+    str_input.trim().to_string()
+}
+
+
+// Convert expression to prefix notation
+fn convert_to_prefix_notation(expr: String) {
+    // Reverse expression string
+    let mut expr_rev = expr.chars().rev().collect::<String>();
+    expr_rev.replace("(", ")");
+    expr_rev.replace(")", "(");
+
+    // Convert to vector
     let mut expression = Vec::<String>::new();
     let mut operand = String::new();
-
-    for c in expr.chars() {
+    for c in expr_rev.chars() {
         if c.is_numeric() {
             operand.push(c);
         } else {
-            if operators[..].contains(&c) || c == '.' {
-                expression.push(operand.clone());
+            if OPERATORS.contains(&c) {
+                expression.push(operand);
                 expression.push(c.to_string());
                 operand = String::new();
             } else {
-                panic!("Invalid operator.");
+                panic!("Expressão inválida.");
             }
         }
     }
-    expression.push(operand.clone());
+    expression.push(operand);
 
-    expression
+    // Convert to prefix
+    let stack_operator = Vec::<char>::new();
 }
-
-// Parse expression
-fn parse_expr<T>(expr: Vec<String>, operators: &[char]) -> T {
-    let mut stack_operands = Vec<T>::new();
-    let mut stack_operators = Vec<char>::new();
-
-    for op in expr {
-        if operators[..].contains(op.chars()[0]) {
-            stack_operators.push(op.chars()[0]);
-        } else {
-        }
-    }
-}
-
-// Add two numbers
-// fn add<T>(a: T, b: T) -> T {
-// }

@@ -10,7 +10,8 @@ const OPERATORS: [char; 6] = ['+', '-', '*', '/', '(', ')'];
 fn main() {
     println!("> ");
     let expr_string = read_string().split(" ").collect::<String>();
-    convert_to_prefix_notation(expr_string);
+    let expr_vector = convert_to_vector(expr_string);
+    convert_to_prefix_notation(expr_vector);
 }
 
 
@@ -22,8 +23,8 @@ fn read_string() -> String {
 }
 
 
-// Convert expression to prefix notation
-fn convert_to_prefix_notation(expr: String) {
+// Convert expression to vector
+fn convert_to_vector(expr: String) -> Vec<String> {
     // Reverse expression string
     let mut expr_rev = expr.chars().rev().collect::<String>();
     expr_rev.replace("(", ")");
@@ -47,6 +48,21 @@ fn convert_to_prefix_notation(expr: String) {
     }
     expression.push(operand);
 
-    // Convert to prefix
-    let stack_operator = Vec::<char>::new();
+    expression
 }
+
+
+// Convert expression vector to prefix
+fn convert_to_prefix_notation(expr_vector: Vec<String>) -> Vec<String> {
+    let mut expression = Vec::<String>::new();
+    
+    for i in expr_vector {
+        if 
+    }
+
+    expr_rev
+}
+
+// Parse expression
+// fn parse_expr(expr: Vec<String>) -> Vec<String> {
+// }

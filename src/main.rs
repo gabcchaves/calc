@@ -85,7 +85,7 @@ fn is_valid(expr_string: String) -> bool {
     temp_expr.replace(")", "");
 
     if !temp_expr.chars().next().unwrap().is_numeric()
-        || !temp_expr.chars().last().unwrap().is_numeric() { // Check if ends with operand.
+        || !temp_expr.chars().last().unwrap().is_numeric() { // Check if starts and ends with operand.
         return false;
     }
 

@@ -1,21 +1,20 @@
 /* Program to read an parse mathematical expressions from
  * command line. */
 use std::io;
-// use std::collections::HashMap;
+use std::collections::HashMap;
 
-
-const OPERATORS: [char; 6] = ['+', '-', '*', '/', '(', ')'];
+// GLOBALS
+const OPERATORS: [char; 4] = ['+', '-', '*', '/'];
+const SYMBOLS: [char; 2] = ['(', ')'];
 
 
 fn main() {
-    println!("> ");
-    let expr_string = read_string().split(" ").collect::<String>();
-    let expr_vector = convert_to_vector(expr_string);
-    convert_to_prefix_notation(expr_vector);
+    let expr_string = read_string();
+    println!("{:?}", convert_to_hashmap(expr_string));
 }
 
 
-// Read string from STDIN
+// Read string from STDIN.
 fn read_string() -> String {
     let mut str_input = String::new();
     io::stdin().read_line(&mut str_input);
@@ -23,46 +22,59 @@ fn read_string() -> String {
 }
 
 
-// Convert expression to vector
-fn convert_to_vector(expr: String) -> Vec<String> {
-    // Reverse expression string
-    let mut expr_rev = expr.chars().rev().collect::<String>();
-    expr_rev.replace("(", ")");
-    expr_rev.replace(")", "(");
+// Convert expression string to a hashmap
+// that maps operands and operators.
+fn convert_to_hashmap(expr_string: String) -> Vec<String> {
+    // Create the vector
+    let mut expr_vector = Vec::<String>::new();
 
-    // Convert to vector
-    let mut expression = Vec::<String>::new();
+    // Remove whitespaces
+    let temp_expr_string = expr_string.split_whitespace().collect::<String>();
+
+    // Separate operands from operators
+    let temp_expr_vector = temp_expr_string.split_inclusive(&SYMBOLS[..]);
     let mut operand = String::new();
-    for c in expr_rev.chars() {
-        if c.is_numeric() {
-            operand.push(c);
-        } else {
-            if OPERATORS.contains(&c) {
-                expression.push(operand);
-                expression.push(c.to_string());
-                operand = String::new();
+
+    for element in temp_expr_vector {
+        for c in element.chars() {
+            if c.is_numeric() || c == ',' || c == '.' {
+                operand.push(c);
             } else {
-                panic!("Expressão inválida.");
+                if OPERATORS.contains(&c) || SYMBOLS.contains(&c) { /* ( End of operand.) */
+                    expr_vector.push(operand.clone());
+                    expr_vector.push(c.to_string());
+                    operand = String::new();
+                } else {
+                    panic!("Invalid expression.");
+                }
             }
         }
     }
-    expression.push(operand);
+    expr_vector.push(operand);
 
-    expression
+    expr_vector
 }
 
 
-// Convert expression vector to prefix
-fn convert_to_prefix_notation(expr_vector: Vec<String>) -> Vec<String> {
-    let mut expression = Vec::<String>::new();
-    
-    for i in expr_vector {
-        if 
+// Check if string is an operator
+fn is_operator(string: String) -> bool {
+    if string.len() == 1 {
+        if OPERATORS.contains(&string.chars().last().unwrap()) {
+            return true;
+        }
     }
 
-    expr_rev
+    false
 }
 
-// Parse expression
-// fn parse_expr(expr: Vec<String>) -> Vec<String> {
-// }
+
+// Check if string is a symbol
+fn is_symbol(string: String) -> bool {
+    if string.len() == 1 {
+        if SYMBOLS.contains(&string.chars().last().unwrap()) {
+            return true;
+        }
+    }
+
+    false
+}

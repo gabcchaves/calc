@@ -1,20 +1,23 @@
 /* Program to read an parse mathematical expressions from
  * command line. */
+
 use std::io;
 use std::collections::HashMap;
 
-// GLOBALS
-const OPERATORS: [char; 4] = ['+', '-', '*', '/'];
-const SYMBOLS: [char; 2] = ['(', ')'];
+const SYMBOLS: [(&str, u8); 7] = [
+    ("+", 1),
+    ("-", 1),
+    ("*", 2),
+    ("/", 2),
+    ("(", 3),
+    (")", 3),
+    ("**", 4),
+];
+
+const OPERATORS_CHARS: [char; 4] = ['+', '-', '*', '/'];
 
 
-fn main() {
-    let expr_string = read_string();
-    println!("{:?}", convert_to_hashmap(expr_string));
-}
-
-
-// Read string from STDIN.
+// Read string from STDIN
 fn read_string() -> String {
     let mut str_input = String::new();
     io::stdin().read_line(&mut str_input);
@@ -22,59 +25,75 @@ fn read_string() -> String {
 }
 
 
-// Convert expression string to a hashmap
-// that maps operands and operators.
-fn convert_to_hashmap(expr_string: String) -> Vec<String> {
-    // Create the vector
-    let mut expr_vector = Vec::<String>::new();
-
+// Check if the expression string is valid
+fn is_valid(expr_string: String) -> bool {
     // Remove whitespaces
-    let temp_expr_string = expr_string.split_whitespace().collect::<String>();
+    let temp_expr_string: String = expr_string.split_whitespace().collect();
 
-    // Separate operands from operators
-    let temp_expr_vector = temp_expr_string.split_inclusive(&SYMBOLS[..]);
-    let mut operand = String::new();
-
-    for element in temp_expr_vector {
-        for c in element.chars() {
-            if c.is_numeric() || c == ',' || c == '.' {
-                operand.push(c);
-            } else {
-                if OPERATORS.contains(&c) || SYMBOLS.contains(&c) { /* ( End of operand.) */
-                    expr_vector.push(operand.clone());
-                    expr_vector.push(c.to_string());
-                    operand = String::new();
-                } else {
-                    panic!("Invalid expression.");
-                }
+    // Validate characters
+    for c in temp_expr_string.chars() {
+        if !c.is_numeric() {
+            if !OPERATORS_CHARS.contains(&c) {
+                return false;
             }
         }
     }
-    expr_vector.push(operand);
 
-    expr_vector
+    // Check expression syntax
+    let mut open_braces = 0;
+    let mut operator_acc = 0;               // For counting consecutive operators (++, +++, --, etc).
+    let mut last_operator: char = ' ';      // To compare with the current operator.
+    for c in temp_expr_string.chars() {
+        if c == '(' {
+            open_braces += 1;
+        } else {
+            if c == ')' {
+                open_braces -= 1;
+            }
+
+            // Check double operator
+            if !c.is_numeric() {
+                operator_acc += 1;
+
+                if operator_acc >= 2 {
+                    if c != last_operator {
+                        return false;
+                    } else {
+                        if c == '*' && operator_acc > 2 {
+                            return false;
+                        }
+
+                        if c != '*' {
+                            return false;
+                        }
+                    }
+                }
+                last_operator = c;
+            } else {
+                operator_acc = 0;
+            }
+        }
+    }
+    
+    if open_braces != 0 {
+        return false;
+    }
+
+    // Check proportion of operands to operators.
+    let mut temp_expr = temp_expr_string.replace("**", "^");
+    temp_expr.replace("(", "");
+    temp_expr.replace(")", "");
+
+    if !temp_expr.chars().next().unwrap().is_numeric()
+        || !temp_expr.chars().last().unwrap().is_numeric() { // Check if ends with operand.
+        return false;
+    }
+
+    true
 }
 
 
-// Check if string is an operator
-fn is_operator(string: String) -> bool {
-    if string.len() == 1 {
-        if OPERATORS.contains(&string.chars().last().unwrap()) {
-            return true;
-        }
-    }
-
-    false
-}
-
-
-// Check if string is a symbol
-fn is_symbol(string: String) -> bool {
-    if string.len() == 1 {
-        if SYMBOLS.contains(&string.chars().last().unwrap()) {
-            return true;
-        }
-    }
-
-    false
+fn main() {
+    let expr_string = read_string();
+    println!("{:?}", is_valid(expr_string));
 }

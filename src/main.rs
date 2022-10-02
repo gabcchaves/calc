@@ -48,28 +48,29 @@ fn is_valid(expr_string: &String) -> bool {
         } else {
             if c == ')' {
                 open_braces -= 1;
-            }
+            } else {
 
-            // Check double operator
-            if !c.is_numeric() {
-                operator_acc += 1;
+                // Check double operator
+                if !c.is_numeric() {
+                    operator_acc += 1;
 
-                if operator_acc >= 2 {
-                    if c != last_operator {
-                        return false;
-                    } else {
-                        if c == '*' && operator_acc > 2 {
+                    if operator_acc >= 2 {
+                        if c != last_operator {
                             return false;
-                        }
+                        } else {
+                            if c == '*' && operator_acc > 2 {
+                                return false;
+                            }
 
-                        if c != '*' {
-                            return false;
+                            if c != '*' {
+                                return false;
+                            }
                         }
                     }
+                    last_operator = c;
+                } else {
+                    operator_acc = 0;
                 }
-                last_operator = c;
-            } else {
-                operator_acc = 0;
             }
         }
     }
@@ -79,7 +80,7 @@ fn is_valid(expr_string: &String) -> bool {
     }
 
     // Check proportion of operands to operators.
-    let mut temp_expr = temp_expr_string.replace("**", "^");
+    let temp_expr = temp_expr_string.replace("**", "^");
     temp_expr.replace("(", "");
     temp_expr.replace(")", "");
 
@@ -95,7 +96,7 @@ fn is_valid(expr_string: &String) -> bool {
 // Convert expression string to vector.
 fn convert_to_vector(expr_string: &String) -> Vec<String> {
     // Remove spaces
-    let mut temp_expr_string = expr_string
+    let temp_expr_string = expr_string
         .split_whitespace()
         .into_iter()
         .collect::<String>();
@@ -117,6 +118,12 @@ fn convert_to_vector(expr_string: &String) -> Vec<String> {
                 expr_vector.push(operand);
                 operand = String::new();
             }
+            if !operator.is_empty() {
+                if operator != "*" || c != '*' {
+                    expr_vector.push(operator);
+                    operator = String::new();
+                }
+            }
             operator.push(c);
         }
     }
@@ -127,11 +134,42 @@ fn convert_to_vector(expr_string: &String) -> Vec<String> {
 
 
 // Convert expression string to prefix notation.
-// fn convert_to_prefix_notation(expr_string: String) -> Vec<String> {
-//     let mut expr: Vec<String> = Vec::new();
-//
-//     expr
-// }
+fn convert_to_prefix_notation(expr_vector: Vec<String>) -> Vec<String> {
+    let mut expr: Vec<String> = Vec::new();
+    let mut operators_stack: Vec<String> = Vec::new();
+    let precedence = HashMap::from(OPERATORS_PRECEDENCE);
+    
+    for string in expr_vector {
+        if SYMBOLS.contains(&string.as_str()) {
+            if operators_stack.is_empty()
+              || string == "(" 
+              || operators_stack.last().unwrap() == "(" 
+              || precedence.get(string.as_str()) > precedence.get(operators_stack.last().unwrap().as_str()) {
+                operators_stack.push(string);
+            } else if string == ")" {
+                for operator in &operators_stack {
+                    if operator == "(" {
+                        break;
+                    } else {
+                        expr.push(operator.to_string());
+                    }
+                }
+            } else {
+                while precedence.get(&operators_stack.last().unwrap().as_str()) >= precedence.get(string.as_str())
+                  || operators_stack.last().unwrap() != "("
+                  || !operators_stack.is_empty() {
+                      expr.push(operators_stack.pop().unwrap());
+                      operators_stack.push(string.clone());
+                }
+            }
+        } else {
+            expr.push(string);
+        }
+    }
+    expr.push(operators_stack.pop().unwrap());
+
+    expr.into_iter().rev().collect()
+}
 
 
 fn main() {
@@ -139,5 +177,9 @@ fn main() {
     if !is_valid(&expr_string) {
         panic!("Expressão inválida.");
     }
-    println!("{:?}", convert_to_vector(&expr_string));
+    let expr_vector = convert_to_vector(&expr_string);
+    println!("{:?}", expr_vector);
+    let expr_prefix = convert_to_prefix_notation(expr_vector.clone());
+    println!("{:?}", expr_vector);
+    println!("{:?}", expr_prefix);
 }
